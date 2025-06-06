@@ -4,18 +4,17 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "clube")
 public class Clube {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer clubeId;
 
-    @Column(nullable = false)
-    private String nome;
+    @Column(name = "nome_clube", nullable = false, length = 100)
+    private String nomeClube;
 
-    @Column(name = "sigla_estado", nullable = false, length = 2)
-    private String siglaEstado;
+    @Column(name = "uf_clube", nullable = false, length = 2)
+    private String ufClube;
 
     @Column(name = "data_fundacao", nullable = false)
     private LocalDate dataFundacao;
@@ -23,34 +22,55 @@ public class Clube {
     @Column(nullable = false)
     private Boolean ativo;
 
+    @ManyToOne
+    @JoinColumn(name = "estadio_id", nullable = false)
+    private Estadio estadio;
+
     public Integer getClubeId() {
         return clubeId;
     }
+
     public void setClubeId(Integer clubeId) {
         this.clubeId = clubeId;
     }
-    public String getNome() {
-        return nome;
+
+    public String getNomeClube() {
+        return nomeClube;
     }
-    public void setNome(String nome) {
-        this.nome = nome;
+
+    public void setNomeClube(String nomeClube) {
+        this.nomeClube = nomeClube;
     }
-    public String getSiglaEstado() {
-        return siglaEstado;
+
+    public String getUfClube() {
+        return ufClube;
     }
-    public void setSiglaEstado(String siglaEstado) {
-        this.siglaEstado = siglaEstado;
+
+    public void setUfClube(String ufClube) {
+        this.ufClube = ufClube;
     }
+
     public LocalDate getDataFundacao() {
         return dataFundacao;
     }
+
     public void setDataFundacao(LocalDate dataFundacao) {
         this.dataFundacao = dataFundacao;
     }
+
     public Boolean getAtivo() {
         return ativo;
     }
+
     public void setAtivo(Boolean ativo) {
         this.ativo = ativo;
+    }
+
+    public Estadio getEstadio() {
+        return estadio;
+    }
+
+    public void setEstadio(Estadio estadio) {
+        this.estadio = estadio;
     }
 }

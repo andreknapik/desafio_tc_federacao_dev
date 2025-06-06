@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "partida")
 public class Partida {
 
     @Id
@@ -13,56 +12,79 @@ public class Partida {
 
     @ManyToOne
     @JoinColumn(name = "clube_mandante_id", nullable = false)
-    private Clube mandante;
+    private Clube clubeMandante;
 
     @ManyToOne
     @JoinColumn(name = "clube_visitante_id", nullable = false)
-    private Clube visitante;
+    private Clube clubeVisitante;
+
+    @Column(name = "gols_mandante", nullable = false)
+    private int golsMandante;
+
+    @Column(name = "gols_visitante", nullable = false)
+    private int golsVisitante;
+
+    @Column(name = "data_da_partida", nullable = false)
+    private LocalDateTime dataDaPartida;
 
     @ManyToOne
     @JoinColumn(name = "estadio_id", nullable = false)
     private Estadio estadio;
 
-    @Column(name = "data_da_partida", nullable = false)
-    private LocalDateTime dataDaPartida;
-
-    @Column(nullable = false)
-    private String resultado;
 
     public Integer getPartidaId() {
         return partidaId;
     }
+
     public void setPartidaId(Integer partidaId) {
         this.partidaId = partidaId;
     }
-    public Clube getMandante() {
-        return mandante;
+
+    public Clube getClubeMandante() {
+        return clubeMandante;
     }
-    public void setMandante(Clube mandante) {
-        this.mandante = mandante;
+
+    public void setClubeMandante(Clube clubeMandante) {
+        this.clubeMandante = clubeMandante;
     }
-    public Clube getVisitante() {
-        return visitante;
+
+    public Clube getClubeVisitante() {
+        return clubeVisitante;
     }
-    public void setVisitante(Clube visitante) {
-        this.visitante = visitante;
+
+    public void setClubeVisitante(Clube clubeVisitante) {
+        this.clubeVisitante = clubeVisitante;
     }
-    public Estadio getEstadio() {
-        return estadio;
+
+    public int getGolsMandante() {
+        return golsMandante;
     }
-    public void setEstadio(Estadio estadio) {
-        this.estadio = estadio;
+
+    public void setGolsMandante(int golsMandante) {
+        this.golsMandante = golsMandante;
     }
+
+    public int getGolsVisitante() {
+        return golsVisitante;
+    }
+
+    public void setGolsVisitante(int golsVisitante) {
+        this.golsVisitante = golsVisitante;
+    }
+
     public LocalDateTime getDataDaPartida() {
         return dataDaPartida;
     }
+
     public void setDataDaPartida(LocalDateTime dataDaPartida) {
         this.dataDaPartida = dataDaPartida;
     }
-    public String getResultado() {
-        return resultado;
+
+    public Estadio getEstadio() {
+        return estadio;
     }
-    public void setResultado(String resultado) {
-        this.resultado = resultado;
+
+    public void setEstadio(Estadio estadio) {
+        this.estadio = estadio;
     }
 }
