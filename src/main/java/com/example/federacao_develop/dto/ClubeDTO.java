@@ -10,7 +10,6 @@ public class ClubeDTO {
     private LocalDate dataFundacao;
     private Boolean ativo;
     private EstadioDTO estadio;
-
     public ClubeDTO() {}
 
 
@@ -61,4 +60,5 @@ public class ClubeDTO {
     public void setEstadio(EstadioDTO estadio) {
         this.estadio = estadio;
     }
+
 }
