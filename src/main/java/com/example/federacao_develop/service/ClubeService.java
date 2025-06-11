@@ -83,6 +83,9 @@ public class ClubeService {
     }
 
     public void delete(Integer id) {
-        clubeRepository.deleteById(id);
+        Clube clube = clubeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Clube não encontrado"));
+        clube.setAtivo(false);
+        clubeRepository.save(clube);
     }
 }
