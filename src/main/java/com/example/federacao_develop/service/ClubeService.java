@@ -6,6 +6,7 @@ import com.example.federacao_develop.model.Clube;
 import com.example.federacao_develop.model.Estadio;
 import com.example.federacao_develop.repository.ClubeRepository;
 import com.example.federacao_develop.repository.EstadioRepository;
+import com.example.federacao_develop.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +60,7 @@ public class ClubeService {
 
     public ClubeDTO findById(Integer id) {
         Clube clube = clubeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Clube não encontrado"));
+                .orElseThrow(() -> new NotFoundException(MensagemExceptionEnum.CLUBE_NAO_ENCONTRADO));
         return toDTO(clube);
     }
 
@@ -70,7 +71,7 @@ public class ClubeService {
 
     public ClubeDTO update(Integer id, ClubeDTO dto) {
         Clube clubebd = clubeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Clube não encontrado"));
+                .orElseThrow(() -> new NotFoundException(MensagemExceptionEnum.CLUBE_NAO_ENCONTRADO));
         clubebd.setNomeClube(dto.getNomeClube());
         clubebd.setUfClube(dto.getUfClube());
         clubebd.setDataFundacao(dto.getDataFundacao());
@@ -84,7 +85,7 @@ public class ClubeService {
 
     public void delete(Integer id) {
         Clube clube = clubeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Clube não encontrado"));
+                .orElseThrow(() -> new NotFoundException(MensagemExceptionEnum.CLUBE_NAO_ENCONTRADO));
         clube.setAtivo(false);
         clubeRepository.save(clube);
     }
