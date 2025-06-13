@@ -1,6 +1,8 @@
 package com.example.federacao_develop.service;
 
 import com.example.federacao_develop.dto.EstadioDTO;
+import com.example.federacao_develop.exception.BusinessException;
+import com.example.federacao_develop.exception.MensagemExceptionEnum;
 import com.example.federacao_develop.model.Estadio;
 import com.example.federacao_develop.repository.ClubeRepository;
 import com.example.federacao_develop.repository.EstadioRepository;
@@ -64,10 +66,10 @@ public class EstadioService {
         boolean estadioTemClubes = clubeRepository.existsByEstadio_EstadioId(id);
         boolean estadioTemPartidas = partidaRepository.existsByEstadio_EstadioId(id);
         if (estadioTemClubes) {
-            throw new RuntimeException("Não é possível deletar o estádio pois existem clubes vinculados a ele. Para deletar este estádio, você precisa primeiro deletar os clubes associados a ele.");
+            throw new BusinessException(MensagemExceptionEnum.ESTADIO_COM_CLUBES);
         }
         if (estadioTemPartidas) {
-            throw new RuntimeException("Não é possível deletar o estádio pois existem partidas marcadas para ele. Para deletar este est[adio, você precisa primeiro deletar as partidas associadas a ele.");
+            throw new BusinessException(MensagemExceptionEnum.ESTADIO_COM_PARTIDAS);
         }
         estadioRepository.deleteById(id);
     }
