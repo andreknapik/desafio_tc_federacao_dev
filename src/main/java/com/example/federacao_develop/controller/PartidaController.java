@@ -12,8 +12,11 @@ import java.util.List;
 @RequestMapping("/api/partidas")
 public class PartidaController {
 
-    @Autowired
-    private PartidaService partidaService;
+    private final PartidaService partidaService;
+
+    public PartidaController(PartidaService partidaService) {
+        this.partidaService = partidaService;
+    }
 
     @GetMapping
     public List<PartidaDTO> listAll() {

@@ -12,8 +12,11 @@ import java.util.List;
 @RequestMapping("/api/estadios")
 public class EstadioController {
 
-    @Autowired
-    private EstadioService estadioService;
+    private final EstadioService estadioService;
+
+    public EstadioController(EstadioService estadioService) {
+        this.estadioService = estadioService;
+    }
 
     @GetMapping
     public List<EstadioDTO> listAll() {

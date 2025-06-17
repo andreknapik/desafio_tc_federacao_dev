@@ -13,8 +13,11 @@ import java.util.List;
 @RequestMapping("/api/clubes")
 public class ClubeController {
 
-    @Autowired
-    private ClubeService clubeService;
+    private final ClubeService clubeService;
+
+    public ClubeController(ClubeService clubeService) {
+        this.clubeService = clubeService;
+    }
 
     @GetMapping
     public List<ClubeDTO> listAll() {
