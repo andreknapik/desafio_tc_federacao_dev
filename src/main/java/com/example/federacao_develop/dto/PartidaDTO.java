@@ -1,15 +1,34 @@
 package com.example.federacao_develop.dto;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
 
 public class PartidaDTO {
 
     private Integer partidaId;
+
+    @NotNull(message = "O clube mandante é obrigatório.")
     private Integer clubeMandanteId;
+
+    @NotNull(message = "O clube visitante é obrigatório.")
     private Integer clubeVisitanteId;
+
+    @Min(value = 0, message = "Gols do mandante não pode ser negativo.")
     private int golsMandante;
+
+    @Min(value = 0, message = "Gols do visitante não pode ser negativo.")
     private int golsVisitante;
+
+    @NotNull(message = "A data da partida é obrigatória.")
+    @FutureOrPresent(message = "A data da partida deve ser presente ou futura.")
     private LocalDateTime dataDaPartida;
+
+    @Valid
+    @NotNull(message = "O estádio da partida é obrigatório.")
     private EstadioDTO estadio;
 
     public PartidaDTO() {}
