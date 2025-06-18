@@ -3,34 +3,34 @@ package com.example.federacao_develop.service;
 import com.example.federacao_develop.dto.EstadioDTO;
 import com.example.federacao_develop.exception.BusinessException;
 import com.example.federacao_develop.exception.MensagemExceptionEnum;
+import com.example.federacao_develop.mapper.EstadioMapperImpl;
 import com.example.federacao_develop.model.Estadio;
 import com.example.federacao_develop.repository.ClubeRepository;
 import com.example.federacao_develop.repository.EstadioRepository;
 import com.example.federacao_develop.repository.PartidaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class EstadioServiceTest {
 
-    @Mock private EstadioRepository estadioRepository;
-    @Mock private ClubeRepository clubeRepository;
-    @Mock private PartidaRepository partidaRepository;
-
-    @InjectMocks private EstadioService estadioService;
+    private EstadioRepository estadioRepository;
+    private ClubeRepository clubeRepository;
+    private PartidaRepository partidaRepository;
+    private EstadioService estadioService;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        estadioRepository = mock(EstadioRepository.class);
+        clubeRepository = mock(ClubeRepository.class);
+        partidaRepository = mock(PartidaRepository.class);
+        estadioService = new EstadioService(estadioRepository, clubeRepository, partidaRepository, new EstadioMapperImpl());
     }
 
     private Estadio criarEstadio() {
@@ -50,9 +50,7 @@ class EstadioServiceTest {
     @Test
     void findAll_deveRetornarLista() {
         when(estadioRepository.findAll()).thenReturn(Arrays.asList(criarEstadio()));
-
         List<EstadioDTO> lista = estadioService.findAll();
-
         assertEquals(1, lista.size());
         assertEquals("Maracanã", lista.get(0).getNomeEstadio());
         verify(estadioRepository).findAll();
@@ -61,9 +59,7 @@ class EstadioServiceTest {
     @Test
     void findById_quandoExiste_deveRetornarDTO() {
         when(estadioRepository.findById(1)).thenReturn(Optional.of(criarEstadio()));
-
         EstadioDTO dto = estadioService.findById(1);
-
         assertNotNull(dto);
         assertEquals("Maracanã", dto.getNomeEstadio());
         verify(estadioRepository).findById(1);
@@ -72,7 +68,6 @@ class EstadioServiceTest {
     @Test
     void findById_quandoNaoExiste_deveLancarRuntimeException() {
         when(estadioRepository.findById(1)).thenReturn(Optional.empty());
-
         RuntimeException ex = assertThrows(RuntimeException.class, () -> estadioService.findById(1));
         assertEquals("Estádio não encontrado", ex.getMessage());
     }
@@ -82,9 +77,7 @@ class EstadioServiceTest {
         EstadioDTO dto = criarEstadioDTO();
         Estadio estadio = criarEstadio();
         when(estadioRepository.save(any(Estadio.class))).thenReturn(estadio);
-
         EstadioDTO criado = estadioService.save(dto);
-
         assertEquals(dto.getNomeEstadio(), criado.getNomeEstadio());
         verify(estadioRepository).save(any(Estadio.class));
     }
@@ -95,12 +88,13 @@ class EstadioServiceTest {
         dto.setNomeEstadio("Novo Nome");
         Estadio estadio = criarEstadio();
         when(estadioRepository.findById(1)).thenReturn(Optional.of(estadio));
-        when(estadioRepository.save(any(Estadio.class))).thenReturn(estadio);
+        when(estadioRepository.save(any(Estadio.class))).thenAnswer(invoc -> invoc.getArgument(0));
 
         EstadioDTO atualizado = estadioService.update(1, dto);
 
         assertNotNull(atualizado);
-        verify(estadioRepository).save(any(Estadio.class));
+        assertEquals("Novo Nome", atualizado.getNomeEstadio());
+        verify(estadioRepository).save(estadio);
         verify(estadioRepository).findById(1);
     }
 
@@ -108,14 +102,12 @@ class EstadioServiceTest {
     void update_quandoNaoExiste_lancaExcecao() {
         EstadioDTO dto = criarEstadioDTO();
         when(estadioRepository.findById(1)).thenReturn(Optional.empty());
-
         assertThrows(RuntimeException.class, () -> estadioService.update(1, dto));
     }
 
     @Test
     void delete_quandoTemClube_lancaBusinessException() {
         when(clubeRepository.existsByEstadio_EstadioId(1)).thenReturn(true);
-
         BusinessException ex = assertThrows(BusinessException.class, () -> estadioService.delete(1));
         assertEquals(MensagemExceptionEnum.ESTADIO_COM_CLUBES, ex.getMensagemEnum());
     }

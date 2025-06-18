@@ -4,6 +4,7 @@ import com.example.federacao_develop.dto.ClubeDTO;
 import com.example.federacao_develop.dto.EstadioDTO;
 import com.example.federacao_develop.exception.MensagemExceptionEnum;
 import com.example.federacao_develop.exception.NotFoundException;
+import com.example.federacao_develop.mapper.ClubeMapperImpl;
 import com.example.federacao_develop.model.Clube;
 import com.example.federacao_develop.model.Estadio;
 import com.example.federacao_develop.repository.ClubeRepository;
@@ -11,9 +12,6 @@ import com.example.federacao_develop.repository.EstadioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -25,18 +23,15 @@ import static org.mockito.Mockito.*;
 
 class ClubeServiceTest {
 
-    @Mock
-    ClubeRepository clubeRepository;
-
-    @Mock
-    EstadioRepository estadioRepository;
-
-    @InjectMocks
-    ClubeService clubeService;
+    private ClubeRepository clubeRepository;
+    private EstadioRepository estadioRepository;
+    private ClubeService clubeService;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        clubeRepository = mock(ClubeRepository.class);
+        estadioRepository = mock(EstadioRepository.class);
+        clubeService = new ClubeService(clubeRepository, estadioRepository, new ClubeMapperImpl());
     }
 
     private Clube criarClube() {
@@ -73,23 +68,18 @@ class ClubeServiceTest {
 
     @Test
     void findAll_deveRetornarListaDeClubeDTO() {
-        Clube clube = criarClube();
-        when(clubeRepository.findAll()).thenReturn(Arrays.asList(clube));
-
+        when(clubeRepository.findAll()).thenReturn(Arrays.asList(criarClube()));
         List<ClubeDTO> lista = clubeService.findAll();
-
         assertEquals(1, lista.size());
         assertEquals("Clube A", lista.get(0).getNomeClube());
-        verify(clubeRepository, times(1)).findAll();
+        verify(clubeRepository).findAll();
     }
 
     @Test
     void findById_quandoExiste_deveRetornarDTO() {
         Clube clube = criarClube();
         when(clubeRepository.findById(1)).thenReturn(Optional.of(clube));
-
         ClubeDTO dto = clubeService.findById(1);
-
         assertNotNull(dto);
         assertEquals("Clube A", dto.getNomeClube());
         verify(clubeRepository).findById(1);
@@ -98,7 +88,6 @@ class ClubeServiceTest {
     @Test
     void findById_quandoNaoExiste_deveLancarNotFound() {
         when(clubeRepository.findById(1)).thenReturn(Optional.empty());
-
         NotFoundException ex = assertThrows(NotFoundException.class, () -> clubeService.findById(1));
         assertEquals(MensagemExceptionEnum.CLUBE_NAO_ENCONTRADO, ex.getMensagemEnum());
     }
@@ -108,12 +97,14 @@ class ClubeServiceTest {
         ClubeDTO dto = criarClubeDTO();
         Clube clube = criarClube();
 
-        // Simular busca do estadio ao converter DTO em entidade
         when(estadioRepository.findById(10)).thenReturn(Optional.of(clube.getEstadio()));
-        when(clubeRepository.save(any(Clube.class))).thenReturn(clube);
+        when(clubeRepository.save(any(Clube.class))).thenAnswer(invoc -> {
+            Clube c = invoc.getArgument(0);
+            c.setClubeId(1);
+            return c;
+        });
 
         ClubeDTO criado = clubeService.save(dto);
-
         assertEquals(dto.getNomeClube(), criado.getNomeClube());
         verify(clubeRepository).save(any(Clube.class));
     }
@@ -121,24 +112,23 @@ class ClubeServiceTest {
     @Test
     void update_deveAlterarCamposEConverterParaDTO() {
         ClubeDTO dto = criarClubeDTO();
+        dto.setNomeClube("NovoNome");
         Clube clubeExistente = criarClube();
 
         when(clubeRepository.findById(1)).thenReturn(Optional.of(clubeExistente));
         when(estadioRepository.findById(10)).thenReturn(Optional.of(clubeExistente.getEstadio()));
-        when(clubeRepository.save(any(Clube.class))).thenReturn(clubeExistente);
+        when(clubeRepository.save(any(Clube.class))).thenAnswer(invoc -> invoc.getArgument(0));
 
         ClubeDTO atualizado = clubeService.update(1, dto);
-
         assertEquals(dto.getNomeClube(), atualizado.getNomeClube());
         verify(clubeRepository).findById(1);
-        verify(clubeRepository).save(any(Clube.class));
+        verify(clubeRepository).save(clubeExistente);
     }
 
     @Test
     void update_quandoNaoExiste_deveLancarNotFound() {
         ClubeDTO dto = criarClubeDTO();
         when(clubeRepository.findById(1)).thenReturn(Optional.empty());
-
         assertThrows(NotFoundException.class, () -> clubeService.update(1, dto));
     }
 
@@ -146,7 +136,7 @@ class ClubeServiceTest {
     void delete_deveDesativarClube() {
         Clube clube = criarClube();
         when(clubeRepository.findById(1)).thenReturn(Optional.of(clube));
-        when(clubeRepository.save(any(Clube.class))).thenReturn(clube);
+        when(clubeRepository.save(any(Clube.class))).thenAnswer(invoc -> invoc.getArgument(0));
 
         clubeService.delete(1);
 
@@ -157,7 +147,6 @@ class ClubeServiceTest {
     @Test
     void delete_quandoNaoExiste_deveLancarNotFound() {
         when(clubeRepository.findById(1)).thenReturn(Optional.empty());
-
         assertThrows(NotFoundException.class, () -> clubeService.delete(1));
     }
 }

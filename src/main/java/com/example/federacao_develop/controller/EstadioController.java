@@ -2,7 +2,6 @@ package com.example.federacao_develop.controller;
 
 import com.example.federacao_develop.dto.EstadioDTO;
 import com.example.federacao_develop.service.EstadioService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
