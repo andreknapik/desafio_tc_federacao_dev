@@ -59,9 +59,9 @@ A **Federação DEV** é um projeto de API RESTful para gerenciar partidas de fu
 
 ### Outros Requisitos & Boas Práticas
 
-- [ ] **Criar testes unitários e de integração para as operações de Partida.**
-- [ ] **Criar testes unitários e de integração para as operações de Clube.**
-- [ ] **Criar testes unitários e de integração para as operações de Estádio.**
+- [x] **Criar testes unitários e de integração para as operações de Partida.**
+- [x] **Criar testes unitários e de integração para as operações de Clube.**
+- [x] **Criar testes unitários e de integração para as operações de Estádio.**
 - [x] **Bean Validation.**
 - [x] **Refinar documentação da API com Swagger/OpenAPI.**
 - [x] **Criar README.md completo no GitHub com instruções de instalação e uso.**
@@ -75,7 +75,7 @@ A **Federação DEV** é um projeto de API RESTful para gerenciar partidas de fu
 
 - [x] Customização de Exceções com uso de Record e ENUM
 - [x] Utilização de Metodologia Ágil SCRUM para desenvolvimento do projeto
-- [x] Otimização de performance
+- [x] Otimização de performance, uso de MapStruct
 
 ---
 
