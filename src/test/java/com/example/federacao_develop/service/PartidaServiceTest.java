@@ -2,190 +2,278 @@ package com.example.federacao_develop.service;
 
 import com.example.federacao_develop.dto.EstadioDTO;
 import com.example.federacao_develop.dto.PartidaDTO;
-import com.example.federacao_develop.mapper.EstadioMapperImpl;
-import com.example.federacao_develop.mapper.PartidaMapperImpl;
+import com.example.federacao_develop.exception.MensagemExceptionEnum;
+import com.example.federacao_develop.exception.NotFoundException;
+import com.example.federacao_develop.mapper.PartidaMapper;
 import com.example.federacao_develop.model.Clube;
 import com.example.federacao_develop.model.Estadio;
 import com.example.federacao_develop.model.Partida;
-import com.example.federacao_develop.repository.PartidaRepository;
-import com.example.federacao_develop.repository.EstadioRepository;
 import com.example.federacao_develop.repository.ClubeRepository;
+import com.example.federacao_develop.repository.EstadioRepository;
+import com.example.federacao_develop.repository.PartidaRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDate;
-import java.util.Arrays;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class PartidaServiceTest {
 
-    private PartidaRepository partidaRepository;
-    private EstadioRepository estadioRepository;
-    private ClubeRepository clubeRepository;
+    @Mock private PartidaRepository partidaRepository;
+    @Mock private EstadioRepository estadioRepository;
+    @Mock private ClubeRepository clubeRepository;
+    @Mock private PartidaMapper partidaMapper;
+
+    @InjectMocks
     private PartidaService partidaService;
+
+    private Partida partida;
+    private PartidaDTO partidaDTO;
+    private Estadio estadio;
+    private EstadioDTO estadioDTO;
+    private Clube mandante;
+    private Clube visitante;
 
     @BeforeEach
     void setUp() {
-        partidaRepository = mock(PartidaRepository.class);
-        estadioRepository = mock(EstadioRepository.class);
-        clubeRepository = mock(ClubeRepository.class);
+        estadio = new Estadio();
+        estadio.setEstadioId(2);
+        estadio.setNomeEstadio("Castelão");
 
-        PartidaMapperImpl partidaMapper = new PartidaMapperImpl();
+        estadioDTO = new EstadioDTO();
+        estadioDTO.setEstadioId(2);
+        estadioDTO.setNomeEstadio("Castelão");
 
-        partidaService = new PartidaService(partidaRepository, estadioRepository, clubeRepository, partidaMapper);
-    }
-    private Partida criarPartida() {
-        Partida partida = new Partida();
-        partida.setPartidaId(1);
-        Clube clubeMandante = new Clube();
-        clubeMandante.setClubeId(10);
-        Clube clubeVisitante = new Clube();
-        clubeVisitante.setClubeId(20);
-        partida.setClubeMandante(clubeMandante);
-        partida.setClubeVisitante(clubeVisitante);
-        partida.setGolsMandante(2);
+        mandante = new Clube();
+        mandante.setClubeId(10);
+
+        visitante = new Clube();
+        visitante.setClubeId(20);
+
+        partida = new Partida();
+        partida.setPartidaId(99);
+        partida.setClubeMandante(mandante);
+        partida.setClubeVisitante(visitante);
+        partida.setGolsMandante(3);
         partida.setGolsVisitante(1);
-        partida.setDataDaPartida(LocalDate.of(2024, 6, 9).atStartOfDay());
-        Estadio estadio = new Estadio();
-        estadio.setEstadioId(15);
-        estadio.setNomeEstadio("Morumbi");
+        partida.setDataDaPartida(LocalDateTime.of(2024, 6, 1, 16, 0));
         partida.setEstadio(estadio);
-        return partida;
-    }
 
-    private PartidaDTO criarPartidaDTO() {
-        PartidaDTO dto = new PartidaDTO();
-        dto.setPartidaId(1);
-        dto.setClubeMandanteId(10);
-        dto.setClubeVisitanteId(20);
-        dto.setGolsMandante(2);
-        dto.setGolsVisitante(1);
-        dto.setDataDaPartida(LocalDate.of(2024, 6, 9).atStartOfDay());
-        EstadioDTO estadioDTO = new EstadioDTO();
-        estadioDTO.setEstadioId(15);
-        estadioDTO.setNomeEstadio("Morumbi");
-        dto.setEstadio(estadioDTO);
-        return dto;
+        partidaDTO = new PartidaDTO();
+        partidaDTO.setPartidaId(99);
+        partidaDTO.setClubeMandanteId(10);
+        partidaDTO.setClubeVisitanteId(20);
+        partidaDTO.setGolsMandante(3);
+        partidaDTO.setGolsVisitante(1);
+        partidaDTO.setDataDaPartida(LocalDateTime.of(2024, 6, 1, 16, 0));
+        partidaDTO.setEstadio(estadioDTO);
     }
 
     @Test
-    void findAll_deveRetornarListaDTO() {
-        when(partidaRepository.findAll()).thenReturn(Arrays.asList(criarPartida()));
-        List<PartidaDTO> lista = partidaService.findAll();
-        assertEquals(1, lista.size());
-        assertEquals(2, lista.get(0).getGolsMandante());
-        verify(partidaRepository).findAll();
+    void findPartidasFilter_returnsDTOs() {
+        Pageable pageable = mock(Pageable.class);
+        Page<Partida> page = new PageImpl<>(Collections.singletonList(partida));
+        when(partidaRepository.findPartidasFilter(10, 2, pageable)).thenReturn(page);
+        when(partidaMapper.toDTO(partida)).thenReturn(partidaDTO);
+
+        Page<PartidaDTO> result = partidaService.findPartidasFilter(10, 2, pageable);
+
+        assertEquals(1, result.getContent().size());
+        assertEquals(99, result.getContent().get(0).getPartidaId());
+        verify(partidaRepository).findPartidasFilter(10, 2, pageable);
+        verify(partidaMapper).toDTO(partida);
     }
 
     @Test
-    void findById_quandoExiste_deveRetornarDTO() {
-        when(partidaRepository.findById(1)).thenReturn(Optional.of(criarPartida()));
-        PartidaDTO dto = partidaService.findById(1);
-        assertNotNull(dto);
-        assertEquals(2, dto.getGolsMandante());
-        verify(partidaRepository).findById(1);
+    void findById_success() {
+        when(partidaRepository.findById(99)).thenReturn(Optional.of(partida));
+        when(partidaMapper.toDTO(partida)).thenReturn(partidaDTO);
+
+        PartidaDTO result = partidaService.findById(99);
+
+        assertNotNull(result);
+        assertEquals(99, result.getPartidaId());
     }
 
     @Test
-    void findById_quandoNaoExiste_lancaExcecao() {
-        when(partidaRepository.findById(1)).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> partidaService.findById(1));
+    void findById_throws_ifNotFound() {
+        when(partidaRepository.findById(99)).thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> partidaService.findById(99));
+        assertEquals("Partida não encontrada", ex.getMessage());
     }
 
     @Test
-    void save_deveSalvarEConverterParaDTO() {
-        PartidaDTO dto = criarPartidaDTO();
-        Partida entity = criarPartida();
+    void save_success_allPresent() {
+        when(partidaMapper.toEntity(partidaDTO)).thenReturn(partida);
+        when(clubeRepository.findById(10)).thenReturn(Optional.of(mandante));
+        when(clubeRepository.findById(20)).thenReturn(Optional.of(visitante));
+        when(estadioRepository.findById(2)).thenReturn(Optional.of(estadio));
+        when(partidaRepository.save(partida)).thenReturn(partida);
+        when(partidaMapper.toDTO(partida)).thenReturn(partidaDTO);
 
-        when(clubeRepository.findById(10)).thenReturn(Optional.of(entity.getClubeMandante()));
-        when(clubeRepository.findById(20)).thenReturn(Optional.of(entity.getClubeVisitante()));
-        when(estadioRepository.findById(15)).thenReturn(Optional.of(entity.getEstadio()));
-        when(partidaRepository.save(any(Partida.class))).thenAnswer(invoc -> {
-            Partida p = invoc.getArgument(0);
-            p.setPartidaId(1);
-            return p;
-        });
+        PartidaDTO result = partidaService.save(partidaDTO);
 
-        PartidaDTO criado = partidaService.save(dto);
-        assertEquals(dto.getGolsMandante(), criado.getGolsMandante());
-        verify(partidaRepository).save(any(Partida.class));
+        assertNotNull(result);
+        verify(clubeRepository).findById(10);
+        verify(clubeRepository).findById(20);
+        verify(estadioRepository).findById(2);
+        verify(partidaRepository).save(partida);
+        verify(partidaMapper).toDTO(partida);
     }
 
     @Test
-    void update_deveAlterarCamposEConverterParaDTO() {
-        PartidaDTO dto = criarPartidaDTO();
-        dto.setGolsMandante(3);
-
-        Partida entity = criarPartida();
-        Clube clubeMandante = entity.getClubeMandante();
-        Clube clubeVisitante = entity.getClubeVisitante();
-        Estadio estadio = entity.getEstadio();
-
-        when(partidaRepository.findById(1)).thenReturn(Optional.of(entity));
-        when(clubeRepository.findById(10)).thenReturn(Optional.of(clubeMandante));
-        when(clubeRepository.findById(20)).thenReturn(Optional.of(clubeVisitante));
-        when(estadioRepository.findById(15)).thenReturn(Optional.of(estadio));
-        when(partidaRepository.save(any(Partida.class))).thenAnswer(invoc -> invoc.getArgument(0));
-
-        PartidaDTO atualizado = partidaService.update(1, dto);
-
-        assertNotNull(atualizado);
-        assertEquals(3, atualizado.getGolsMandante());
-        verify(partidaRepository).findById(1);
-        verify(partidaRepository).save(entity);
-    }
-
-    @Test
-    void update_quandoNaoExiste_lancaExcecao() {
-        PartidaDTO dto = criarPartidaDTO();
-        when(partidaRepository.findById(1)).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> partidaService.update(1, dto));
-    }
-
-    @Test
-    void update_quandoMandanteNaoExiste_lancaExcecao() {
-        PartidaDTO dto = criarPartidaDTO();
-        Partida entity = criarPartida();
-
-        when(partidaRepository.findById(1)).thenReturn(Optional.of(entity));
+    void save_throws_ifMandanteNotFound() {
+        when(partidaMapper.toEntity(partidaDTO)).thenReturn(partida);
         when(clubeRepository.findById(10)).thenReturn(Optional.empty());
-
-        assertThrows(RuntimeException.class, () -> partidaService.update(1, dto));
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> partidaService.save(partidaDTO));
+        assertEquals("Clube mandante não encontrado", ex.getMessage());
     }
 
     @Test
-    void update_quandoVisitanteNaoExiste_lancaExcecao() {
-        PartidaDTO dto = criarPartidaDTO();
-        Partida entity = criarPartida();
-
-        when(partidaRepository.findById(1)).thenReturn(Optional.of(entity));
-        when(clubeRepository.findById(10)).thenReturn(Optional.of(entity.getClubeMandante()));
+    void save_throws_ifVisitanteNotFound() {
+        when(partidaMapper.toEntity(partidaDTO)).thenReturn(partida);
+        when(clubeRepository.findById(10)).thenReturn(Optional.of(mandante));
         when(clubeRepository.findById(20)).thenReturn(Optional.empty());
-
-        assertThrows(RuntimeException.class, () -> partidaService.update(1, dto));
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> partidaService.save(partidaDTO));
+        assertEquals("Clube visitante não encontrado", ex.getMessage());
     }
 
     @Test
-    void update_quandoEstadioNaoExiste_lancaExcecao() {
-        PartidaDTO dto = criarPartidaDTO();
-        Partida entity = criarPartida();
-
-        when(partidaRepository.findById(1)).thenReturn(Optional.of(entity));
-        when(clubeRepository.findById(10)).thenReturn(Optional.of(entity.getClubeMandante()));
-        when(clubeRepository.findById(20)).thenReturn(Optional.of(entity.getClubeVisitante()));
-        when(estadioRepository.findById(15)).thenReturn(Optional.empty());
-
-        assertThrows(RuntimeException.class, () -> partidaService.update(1, dto));
+    void save_throws_ifEstadioNotFound() {
+        when(partidaMapper.toEntity(partidaDTO)).thenReturn(partida);
+        when(clubeRepository.findById(10)).thenReturn(Optional.of(mandante));
+        when(clubeRepository.findById(20)).thenReturn(Optional.of(visitante));
+        when(estadioRepository.findById(2)).thenReturn(Optional.empty());
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> partidaService.save(partidaDTO));
+        assertEquals("Estádio não encontrado", ex.getMessage());
     }
 
     @Test
-    void delete_chamaDeleteById() {
-        partidaService.delete(1);
-        verify(partidaRepository).deleteById(1);
+    void update_success_allPresent() {
+        PartidaDTO updateDTO = new PartidaDTO();
+        updateDTO.setClubeMandanteId(10);
+        updateDTO.setClubeVisitanteId(20);
+        updateDTO.setGolsMandante(2);
+        updateDTO.setGolsVisitante(2);
+        updateDTO.setDataDaPartida(LocalDateTime.of(2024, 7, 1, 19, 0));
+        updateDTO.setEstadio(estadioDTO);
+
+        when(partidaRepository.findById(99)).thenReturn(Optional.of(partida));
+        when(clubeRepository.findById(10)).thenReturn(Optional.of(mandante));
+        when(clubeRepository.findById(20)).thenReturn(Optional.of(visitante));
+        when(estadioRepository.findById(2)).thenReturn(Optional.of(estadio));
+        when(partidaRepository.save(partida)).thenReturn(partida);
+        when(partidaMapper.toDTO(partida)).thenReturn(updateDTO);
+
+        PartidaDTO result = partidaService.update(99, updateDTO);
+
+        assertEquals(2, result.getGolsMandante());
+        assertEquals(2, result.getGolsVisitante());
+
+        verify(clubeRepository).findById(10);
+        verify(clubeRepository).findById(20);
+        verify(estadioRepository).findById(2);
+        verify(partidaRepository).save(partida);
+        verify(partidaMapper).toDTO(partida);
+    }
+
+    @Test
+    void update_throws_ifNotFound() {
+        when(partidaRepository.findById(99)).thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> partidaService.update(99, partidaDTO));
+        assertEquals("Partida não encontrada", ex.getMessage());
+        verify(partidaRepository, never()).save(any());
+    }
+
+    @Test
+    void update_throws_ifMandanteNotFound() {
+        when(partidaRepository.findById(99)).thenReturn(Optional.of(partida));
+        when(clubeRepository.findById(10)).thenReturn(Optional.empty());
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> partidaService.update(99, partidaDTO));
+        assertEquals("Clube mandante não encontrado", ex.getMessage());
+    }
+
+    @Test
+    void update_throws_ifVisitanteNotFound() {
+        when(partidaRepository.findById(99)).thenReturn(Optional.of(partida));
+        when(clubeRepository.findById(10)).thenReturn(Optional.of(mandante));
+        when(clubeRepository.findById(20)).thenReturn(Optional.empty());
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> partidaService.update(99, partidaDTO));
+        assertEquals("Clube visitante não encontrado", ex.getMessage());
+    }
+
+    @Test
+    void update_throws_ifEstadioNotFound() {
+        when(partidaRepository.findById(99)).thenReturn(Optional.of(partida));
+        when(clubeRepository.findById(10)).thenReturn(Optional.of(mandante));
+        when(clubeRepository.findById(20)).thenReturn(Optional.of(visitante));
+        when(estadioRepository.findById(2)).thenReturn(Optional.empty());
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> partidaService.update(99, partidaDTO));
+        assertEquals("Estádio não encontrado", ex.getMessage());
+    }
+
+    @Test
+    void update_onlyUpdatesProvidedFields() {
+        // Caso: DTO não traz estadio, não sobrescreve
+        PartidaDTO updateDTO = new PartidaDTO();
+        updateDTO.setClubeMandanteId(10);
+        updateDTO.setClubeVisitanteId(20);
+        updateDTO.setGolsMandante(5);
+        updateDTO.setGolsVisitante(0);
+        updateDTO.setDataDaPartida(LocalDateTime.of(2025, 1, 1, 12, 0));
+        updateDTO.setEstadio(null);
+
+        when(partidaRepository.findById(99)).thenReturn(Optional.of(partida));
+        when(clubeRepository.findById(10)).thenReturn(Optional.of(mandante));
+        when(clubeRepository.findById(20)).thenReturn(Optional.of(visitante));
+        when(partidaRepository.save(partida)).thenReturn(partida);
+        when(partidaMapper.toDTO(partida)).thenReturn(updateDTO);
+
+        PartidaDTO result = partidaService.update(99, updateDTO);
+
+        assertEquals(5, result.getGolsMandante());
+        verify(estadioRepository, never()).findById(any());
+    }
+
+    @Test
+    void delete_callsRepository() {
+        when(partidaRepository.existsById(99)).thenReturn(true);
+        doNothing().when(partidaRepository).deleteById(99);
+        partidaService.delete(99);
+        verify(partidaRepository).deleteById(99);
+    }
+
+    @Test
+    void delete_throwsException_whenNotFound() {
+        when(partidaRepository.existsById(99)).thenReturn(false);
+        NotFoundException ex = assertThrows(NotFoundException.class, () -> partidaService.delete(99));
+        assertEquals(MensagemExceptionEnum.PARTIDA_NAO_ENCONTRADA.getMessage(), ex.getMessage());
+        verify(partidaRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void findById_throwsException_whenNotFound() {
+        when(partidaRepository.findById(1234)).thenReturn(Optional.empty());
+        NotFoundException ex = assertThrows(NotFoundException.class, () -> partidaService.findById(1234));
+        assertEquals(MensagemExceptionEnum.PARTIDA_NAO_ENCONTRADA.getMessage(), ex.getMessage());
     }
 }
