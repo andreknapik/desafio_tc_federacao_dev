@@ -2,24 +2,26 @@ package com.example.federacao_develop.controller;
 
 import com.example.federacao_develop.dto.EstadioDTO;
 import com.example.federacao_develop.service.EstadioService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/api/estadios")
 public class EstadioController {
 
-    private final EstadioService estadioService;
+    private EstadioService estadioService;
 
     public EstadioController(EstadioService estadioService) {
         this.estadioService = estadioService;
     }
 
     @GetMapping
-    public List<EstadioDTO> listAll() {
-        return estadioService.findAll();
+    public Page<EstadioDTO> listarPaginado(Pageable pageable) {
+        return estadioService.findAllPage(pageable);
     }
 
     @GetMapping("/{id}")
@@ -28,12 +30,13 @@ public class EstadioController {
     }
 
     @PostMapping
-    public ResponseEntity<EstadioDTO> create(@RequestBody EstadioDTO dto) {
-        return ResponseEntity.ok(estadioService.save(dto));
+    @ResponseStatus(HttpStatus.CREATED)
+    public EstadioDTO create(@RequestBody @Valid EstadioDTO estadioDTO) {
+        return estadioService.save(estadioDTO);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EstadioDTO> update(@PathVariable Integer id, @RequestBody EstadioDTO dto) {
+    public ResponseEntity<EstadioDTO> update(@PathVariable Integer id, @RequestBody @Valid EstadioDTO dto) {
         return ResponseEntity.ok(estadioService.update(id, dto));
     }
 

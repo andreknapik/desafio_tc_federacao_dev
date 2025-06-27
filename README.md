@@ -156,15 +156,43 @@ spring.datasource.password=sua_senha
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 ```
-### 4. Compilar o projeto
-```sh
-mvn clean install
-```
-### 5. Executar a aplicação
-```sh
-mvn spring-boot:run
-```
-### 6. Acessar a API
-A API estará disponível em `http://localhost:8080/api/v1`. Você pode usar ferramentas como Postman ou Insomnia para testar os endpoints.
-### 7. Documentação da API
-A documentação da API está disponível em `http://localhost:8080/swagger-ui/index.html` após iniciar a aplicação. Utilize o Swagger para explorar os endpoints e testar as operações.
+
+[//]: # (### 4. Compilar o projeto)
+
+[//]: # (```sh)
+
+[//]: # (mvn clean install)
+
+[//]: # (```)
+
+[//]: # (### 5. Executar a aplicação)
+
+[//]: # (```sh)
+
+[//]: # (mvn spring-boot:run)
+
+[//]: # (```)
+
+[//]: # (### 6. Acessar a API)
+
+[//]: # (A API estará disponível em `http://localhost:8080/api/v1`. Você pode usar ferramentas como Postman ou Insomnia para testar os endpoints.)
+
+[//]: # (### 7. Documentação da API)
+
+[//]: # (A documentação da API está disponível em `http://localhost:8080/swagger-ui/index.html` após iniciar a aplicação. Utilize o Swagger para explorar os endpoints e testar as operações.)
+
+---
+## 🎁 Extras 
+
+### Organização do Projeto no Postman
+
+![Organização do Projeto no Postman](postman.png)
+
+### Testes Unitários e de Integração
+
+![Testes Unitários e de Integração](testes.png)
+xxx
+
+### Organização do Projeto no Jira
+
+![Organização do Projeto no Jira](jira.png)

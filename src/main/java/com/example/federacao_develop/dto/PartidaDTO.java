@@ -1,10 +1,10 @@
 package com.example.federacao_develop.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-
 import java.time.LocalDateTime;
 
 public class PartidaDTO {
@@ -12,10 +12,15 @@ public class PartidaDTO {
     private Integer partidaId;
 
     @NotNull(message = "O clube mandante é obrigatório.")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Integer clubeMandanteId;
 
     @NotNull(message = "O clube visitante é obrigatório.")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Integer clubeVisitanteId;
+
+    private ClubeResumoDTO clubeMandante;
+    private ClubeResumoDTO clubeVisitante;
 
     @Min(value = 0, message = "Gols do mandante não pode ser negativo.")
     private int golsMandante;
@@ -55,6 +60,22 @@ public class PartidaDTO {
 
     public void setClubeVisitanteId(Integer clubeVisitanteId) {
         this.clubeVisitanteId = clubeVisitanteId;
+    }
+
+    public ClubeResumoDTO getClubeMandante() {
+        return clubeMandante;
+    }
+
+    public void setClubeMandante(ClubeResumoDTO clubeMandante) {
+        this.clubeMandante = clubeMandante;
+    }
+
+    public ClubeResumoDTO getClubeVisitante() {
+        return clubeVisitante;
+    }
+
+    public void setClubeVisitante(ClubeResumoDTO clubeVisitante) {
+        this.clubeVisitante = clubeVisitante;
     }
 
     public int getGolsMandante() {

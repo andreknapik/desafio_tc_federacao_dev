@@ -12,7 +12,7 @@
 	<artifactId>federacao_develop</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>federacao_develop</name>
-	<description>federacao_develop</description>
+	<description>Gerenciador de Partidas, Resultados, Clubes e Estádios</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -47,6 +47,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
 			<scope>test</scope>
 		</dependency>
         <dependency>
